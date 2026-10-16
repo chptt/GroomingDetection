@@ -1,0 +1,1064 @@
+\documentclass[12pt,a4paper]{article}
+
+% ── Packages ──────────────────────────────────────────────────────────────────
+\usepackage[a4paper, margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{setspace}
+\usepackage{parskip}
+\usepackage{mdframed}
+\usepackage{tocloft}
+\usepackage{float}
+
+% ── Colours ───────────────────────────────────────────────────────────────────
+\definecolor{exactgreen}{RGB}{39,174,96}
+\definecolor{approxyellow}{RGB}{211,84,0}
+\definecolor{notred}{RGB}{192,57,43}
+\definecolor{partialblue}{RGB}{41,128,185}
+\definecolor{codebg}{RGB}{245,245,245}
+\definecolor{codeframe}{RGB}{200,200,200}
+\definecolor{linkblue}{RGB}{26,115,232}
+\definecolor{sectionblue}{RGB}{23,55,94}
+\definecolor{lightgray}{RGB}{230,230,230}
+
+% ── Hyperref ──────────────────────────────────────────────────────────────────
+\hypersetup{
+  colorlinks=true,
+  linkcolor=linkblue,
+  urlcolor=linkblue,
+  citecolor=linkblue,
+  pdftitle={Project Report: Online Grooming Detection System},
+  pdfauthor={BTP-demo},
+  bookmarks=true,
+  bookmarksnumbered=true
+}
+
+% ── Section styling ───────────────────────────────────────────────────────────
+\titleformat{\section}{\large\bfseries\color{sectionblue}}{\thesection}{1em}{}[\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries\color{sectionblue}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\normalsize\itshape\color{sectionblue}}{\thesubsubsection}{1em}{}
+
+% ── Header / footer ───────────────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{Online Grooming Detection System}}
+\fancyhead[R]{\small\textit{BTP-demo}}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Code listings ─────────────────────────────────────────────────────────────
+\lstdefinestyle{codestyle}{
+  backgroundcolor=\color{codebg},
+  frame=single,
+  framerule=0.5pt,
+  rulecolor=\color{codeframe},
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  breakatwhitespace=true,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  numbers=none,
+}
+\lstset{style=codestyle}
+
+% ── Coloured status badges ────────────────────────────────────────────────────
+\newcommand{\exactbadge}{\textcolor{exactgreen}{\textbf{[EXACT]}}}
+\newcommand{\approxbadge}{\textcolor{approxyellow}{\textbf{[APPROX.]}}}
+\newcommand{\partialbadge}{\textcolor{partialblue}{\textbf{[PARTIAL]}}}
+\newcommand{\notbadge}{\textcolor{notred}{\textbf{[NOT POSSIBLE]}}}
+
+% ── Caution box ───────────────────────────────────────────────────────────────
+\newmdenv[
+  linecolor=approxyellow,
+  backgroundcolor=yellow!8,
+  linewidth=1.5pt,
+  innerleftmargin=10pt,
+  innerrightmargin=10pt,
+  innertopmargin=8pt,
+  innerbottommargin=8pt
+]{cautionbox}
+
+\newmdenv[
+  linecolor=exactgreen,
+  backgroundcolor=green!6,
+  linewidth=1.5pt,
+  innerleftmargin=10pt,
+  innerrightmargin=10pt,
+  innertopmargin=8pt,
+  innerbottommargin=8pt
+]{infobox}
+
+% ── TOC style ─────────────────────────────────────────────────────────────────
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{document}
+
+% ══ Title page ════════════════════════════════════════════════════════════════
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+
+  {\Huge\bfseries\color{sectionblue} Online Grooming Detection System \par}
+  \vspace{0.4cm}
+  {\Large\bfseries Project Report \par}
+  \vspace{1.2cm}
+
+  \rule{\linewidth}{0.5pt}
+  \vspace{0.4cm}
+
+  {\large\itshape Implementation of:\par}
+  \vspace{0.3cm}
+  {\normalsize
+    Street, J., Ihianle, I.K., Olajide, F., \& Lotfi, A. (2025).\\
+    \textit{Enhanced Online Grooming Detection Employing Context Determination}\\
+    \textit{and Message-Level Analysis.}\\
+    \textit{Intelligent Systems with Applications}, 28, 200607.\\
+    \href{https://doi.org/10.1016/j.iswa.2025.200607}
+         {\texttt{doi:10.1016/j.iswa.2025.200607}}
+  \par}
+
+  \vspace{0.8cm}
+  \rule{\linewidth}{0.5pt}
+  \vspace{0.8cm}
+
+  {\large\textbf{Dataset:}\par}
+  \vspace{0.2cm}
+  {\normalsize
+    Koutli, E. (2023). \textit{PervertedJusticeDataset}.\\
+    \href{https://github.com/helenkoutli/PervertedJusticeDataset}
+         {\texttt{github.com/helenkoutli/PervertedJusticeDataset}}
+  \par}
+
+  \vspace{1.2cm}
+
+  {\large\textbf{Repository:}\par}
+  \vspace{0.2cm}
+  {\normalsize
+    \href{https://github.com/chptt/GroomingDetection}
+         {\texttt{github.com/chptt/GroomingDetection}}
+  \par}
+
+  \vfill
+
+  {\normalsize BTP-demo Project\par}
+  \vspace{0.3cm}
+  {\normalsize\today\par}
+\end{titlepage}
+
+% ══ Table of contents ═════════════════════════════════════════════════════════
+\tableofcontents
+\newpage
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Project Overview}
+% ══════════════════════════════════════════════════════════════════════════════
+
+This project implements the online grooming detection system described in
+Street et al.\ (2025) using the publicly available PervertedJustice (PJ)
+dataset. The system performs two complementary analyses:
+
+\begin{enumerate}[leftmargin=*, label=\textbf{\arabic*.}]
+  \item \textbf{Message-Level Analysis (MLA):} Each chat utterance is
+        classified as \emph{Adult} (label 1) or \emph{Child} (label 0) based
+        on language patterns, using four classifiers: SVM, Naive Bayes, BERT,
+        and RoBERTa.
+
+  \item \textbf{Context Determination:} Per-actor predictions are aggregated
+        via a binomial significance test to determine whether a full
+        conversation involves an Adult--Child (AC) dyad, which is a key signal
+        for Online Grooming (OG).
+\end{enumerate}
+
+The implementation is faithful to the paper wherever the dataset permits.
+All deviations from the paper's methodology are explicitly documented with
+justification.
+
+\subsection{Key Clarifications}
+
+\begin{cautionbox}
+\textbf{Important:} The following distinctions are enforced throughout the
+entire codebase and must not be conflated.
+\end{cautionbox}
+
+\vspace{0.5em}
+\begin{tabularx}{\linewidth}{>{\itshape}lX}
+  \toprule
+  \textbf{Common Misconception} & \textbf{Correct Interpretation} \\
+  \midrule
+  ``Predator utterances are grooming messages'' &
+    Predator utterances carry the label \textit{Adult} based on file
+    structure, not message content. \\
+  \addlinespace
+  ``TP\% = grooming detection accuracy'' &
+    TP\% measures speaker-role classification accuracy
+    (Adult vs.\ Child language style). \\
+  \addlinespace
+  ``We can detect grooming in new chats'' &
+    This system classifies language style; it does not flag
+    individual sentences as grooming. \\
+  \addlinespace
+  ``FP=0 means perfect classification'' &
+    FP=0 is a dataset property --- all PJ conversations are OG-positive,
+    so no false positive can arise on this dataset alone. \\
+  \bottomrule
+\end{tabularx}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Dataset Acquisition and Inspection}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\subsection{Repository}
+
+The dataset was cloned directly from GitHub into the project workspace:
+
+\begin{lstlisting}
+git clone https://github.com/helenkoutli/PervertedJusticeDataset.git
+\end{lstlisting}
+
+\subsection{Repository Structure}
+
+\begin{lstlisting}
+PervertedJusticeDataset/
+|-- predators/      # 621 .txt files, one per predator username
+|-- officers/       # 638 .txt files, one per officer username
+|-- meta.tsv        # 623 rows: name, date, place, comment, URLs
+`-- url_name.tsv    # 1244 rows: URL <-> HTML filename mapping
+\end{lstlisting}
+
+\subsection{Inspection Findings}
+
+\begin{table}[H]
+  \centering
+  \caption{PervertedJustice Dataset Statistics}
+  \begin{tabularx}{\linewidth}{Xr}
+    \toprule
+    \textbf{Property} & \textbf{Value} \\
+    \midrule
+    Predator files                            & 621 \\
+    Officer files                             & 638 \\
+    Paired conversations (both files exist)   & 609 \\
+    Predator-only (no matching officer)       & 12  \\
+    Officer-only (multi-officer, \_1/\_2 suffixes) & 29 \\
+    Total predator utterances                 & 706,214 \\
+    Total officer utterances                  & 662,925 \\
+    Grand total utterances                    & 1,369,139 \\
+    Utterances per file --- min / max / mean  & 8 / 27,543 / 2,106 \\
+    Text encoding                             & ASCII \\
+    Empty files                               & 0 \\
+    Duplicate files                           & 0 \\
+    \bottomrule
+  \end{tabularx}
+  \label{tab:dataset_stats}
+\end{table}
+
+\subsection{File Naming Convention}
+
+\begin{itemize}[leftmargin=*]
+  \item \texttt{predators/predator\_\textlangle username\textrangle.txt}
+        --- all utterances by the predator.
+  \item \texttt{officers/officer\_\textlangle username\textrangle.txt}
+        --- all utterances by the officer(s) in that conversation.
+  \item Conversations with multiple officers use suffixes:
+        \texttt{officer\_\textlangle username\textrangle\_1.txt},
+        \texttt{officer\_\textlangle username\textrangle\_2.txt}.
+  \item Conversation ID $=$ \textlangle username\textrangle\ extracted
+        from the filename.
+\end{itemize}
+
+\subsection{Critical Dataset Constraints}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Timestamps removed} during cleaning $\Rightarrow$ original
+        chronological interleaving is lost; phase-based analysis cannot be
+        reproduced.
+  \item \textbf{Usernames removed} $\Rightarrow$ actors cannot be
+        re-identified.
+  \item \textbf{PJ comments / interventions removed} $\Rightarrow$ clean
+        utterance-only format.
+  \item \textbf{All conversations are OG-positive} $\Rightarrow$ every
+        transcript is a confirmed grooming interaction; no negative examples
+        exist in this repository.
+  \item \textbf{Officers are adult volunteers} posing as children, not real
+        minors.
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Paper Methodology Summary}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\subsection{Message-Level Analysis (MLA)}
+
+Each utterance is independently classified as Adult (1) or Child (0).
+
+\subsubsection{Models}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{SVM} --- \texttt{sklearn} Pipeline with
+        \texttt{CountVectorizer} + \texttt{LinearSVC} (calibrated).
+  \item \textbf{Naive Bayes} --- \texttt{sklearn} \texttt{MultinomialNB}
+        with \texttt{CountVectorizer}.
+  \item \textbf{BERT} --- \texttt{bert-base-uncased} fine-tuned with
+        TensorFlow (3 epochs, learning rate $2 \times 10^{-5}$).
+  \item \textbf{RoBERTa} --- \texttt{roberta-base} fine-tuned with
+        TensorFlow (3 epochs, learning rate $2 \times 10^{-5}$).
+\end{itemize}
+
+\subsubsection{Message Threshold \texorpdfstring{$t$}{t} (Equation 1)}
+
+A message with prediction probability $n$ (probability of Adult class) is
+\emph{omitted} when:
+
+\begin{equation}
+  (0.5 + t) > n > (0.5 - t)
+  \label{eq:threshold}
+\end{equation}
+
+Messages falling in this low-confidence band are excluded from metric
+calculation. Values of $t$ tested:
+$t \in \{0.2,\, 0.3,\, 0.4,\, 0.45\}$.
+This applies to BERT and RoBERTa only; SVM and NB produce no omissions.
+
+\subsubsection{MLA Metrics}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{TP\%} --- correct Adult/Child determinations
+        (percentage of \emph{kept} messages).
+  \item \textbf{IA\%} --- Incorrect Adult: predicted Adult, true label was
+        Child.
+  \item \textbf{IC\%} --- Incorrect Child: predicted Child, true label was
+        Adult.
+  \item \textbf{O\%} --- Omissions: messages excluded by threshold $t$
+        (percentage of \emph{all} messages, not just kept ones).
+\end{itemize}
+
+Note: TP\% $+$ IA\% $+$ IC\% $\approx$ 100\% over kept messages; O\%
+is reported separately over all messages.
+
+\subsection{Context Determination}
+
+For each conversation, both actors (predator and officer) are evaluated
+independently using the following algorithm (paper Figure 3):
+
+\begin{enumerate}[leftmargin=*, label=\textbf{Step \arabic*.}]
+  \item Collect per-actor $P(\text{Adult})$ predictions from the MLA model.
+  \item Apply threshold $t$ (Equation~\ref{eq:threshold}) to omit
+        low-confidence messages.
+  \item Run a two-sided binomial test:
+        \[
+          H_0: P(\text{Adult vote}) = 0.5
+        \]
+        using \texttt{scipy.stats.binomtest}.
+  \item Apply the \textbf{Actor Significance Threshold (AST)}:
+        \begin{align*}
+          p\text{-value} < \text{AST}\ \&\ \bar{n} > 0.5
+            &\;\Rightarrow\; \text{Actor} = \textbf{Adult (A)} \\
+          p\text{-value} < \text{AST}\ \&\ \bar{n} \leq 0.5
+            &\;\Rightarrow\; \text{Actor} = \textbf{Child (C)} \\
+          p\text{-value} \geq \text{AST}
+            &\;\Rightarrow\; \text{Actor} = \textbf{NS (Not Significant)}
+        \end{align*}
+        AST values tested: $\{0.05,\, 0.01,\, 0.001\}$.
+  \item Apply the \textbf{AC Context Rule} (paper Figure 3):
+        \begin{equation}
+          \text{is\_AC} =
+            \bigl(A \oplus B \text{ is Adult}\bigr)
+            \;\wedge\;
+            \bigl(A \oplus B \text{ is Child}\bigr)
+          \label{eq:ac_rule}
+        \end{equation}
+        i.e., exactly one actor is Adult \emph{and} exactly one is Child;
+        NS in either position $\Rightarrow$ non-AC.
+\end{enumerate}
+
+Context metrics: TP, FP, TN, FN, F1-score.
+
+\subsection{Train / Test Split}
+
+80\% training / 20\% testing, split \textbf{by conversation} (not by
+individual utterance). The same conversation's predator and officer files
+always land in the same split, preventing any data leakage.
+Implemented using \texttt{sklearn.model\_selection.GroupShuffleSplit}.
+
+\subsection{Preprocessing}
+
+Per paper Section~4.2: \textbf{no preprocessing} beyond excluding
+transcripts shorter than 10 messages (for the PAN12 dataset). Punctuation,
+stopwords, and casing are preserved deliberately --- they carry signal for
+Adult/Child language distinction.
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Paper-to-Dataset Reproducibility Mapping}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{4.2cm}
+                  >{\centering\arraybackslash}p{2.1cm}
+                  >{\raggedright\arraybackslash}p{7.5cm}}
+  \caption{Reproducibility of Each Paper Component}
+  \label{tab:reproducibility} \\
+  \toprule
+  \textbf{Component} & \textbf{Status} & \textbf{Notes} \\
+  \midrule
+  \endfirsthead
+  \multicolumn{3}{c}{\tablename~\thetable\ (continued)} \\
+  \toprule
+  \textbf{Component} & \textbf{Status} & \textbf{Notes} \\
+  \midrule
+  \endhead
+  \bottomrule
+  \endfoot
+
+  MLA --- SVM                & \approxbadge  &
+    Reproducible; lower TP on small samples due to training-set size. \\
+  \addlinespace
+  MLA --- Naive Bayes        & \approxbadge  &
+    Same as SVM. \\
+  \addlinespace
+  MLA --- BERT               & \approxbadge  &
+    Requires TensorFlow + GPU; fully implemented. \\
+  \addlinespace
+  MLA --- RoBERTa            & \approxbadge  &
+    Requires TensorFlow + GPU; fully implemented. \\
+  \addlinespace
+  Message Threshold $t$ (Eq.~\ref{eq:threshold}) & \exactbadge &
+    Implemented precisely as stated in the paper. \\
+  \addlinespace
+  Actor Significance (binomial test) & \exactbadge &
+    \texttt{scipy.stats.binomtest} with two-sided alternative. \\
+  \addlinespace
+  AC Context Rule (Eq.~\ref{eq:ac_rule}) & \exactbadge &
+    XOR logic implemented exactly as described. \\
+  \addlinespace
+  MLA metrics (TP, IA, IC, O) & \exactbadge &
+    Matches paper Tables~2/3 format exactly. \\
+  \addlinespace
+  Context metrics (TP, FP, TN, FN, F1) & \partialbadge &
+    FP=0, TN=0 on PJ (all-positive dataset); F1 valid for TP/FN. \\
+  \addlinespace
+  80/20 conversation split   & \exactbadge  &
+    \texttt{GroupShuffleSplit} by \texttt{conversation\_id}. \\
+  \addlinespace
+  Minimal preprocessing      & \exactbadge  &
+    Whitespace strip only; no punctuation or stopword removal. \\
+  \addlinespace
+  Grooming phase analysis    & \notbadge    &
+    Timestamps removed; chronological order is lost. \\
+  \addlinespace
+  Cross-dataset eval (PAN12) & \notbadge    &
+    PAN12 not included; requires a separate download. \\
+  \addlinespace
+  Turn-taking / response time & \notbadge   &
+    Speakers separated into different files; interleaving lost. \\
+\end{longtable}
+
+\textbf{Legend:}
+\exactbadge\ Fully reproducible as described \quad
+\approxbadge\ Minor differences expected \quad
+\partialbadge\ Dataset-imposed limitation \quad
+\notbadge\ Not possible / not reproduced
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Implementation Architecture}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\subsection{Directory Layout}
+
+\begin{lstlisting}
+BTP-demo/
+|-- PervertedJusticeDataset/        # Cloned dataset (never modified)
+|   |-- predators/   (621 files)
+|   |-- officers/    (638 files)
+|   |-- meta.tsv
+|   `-- url_name.tsv
+|
+`-- grooming_detection/             # All implementation code
+    |-- inspect_dataset.py
+    |-- data_loader.py
+    |-- preprocessing.py
+    |-- message_classifier.py
+    |-- context_determination.py
+    |-- actor_classification.py
+    |-- evaluation.py
+    |-- run_experiments.py
+    |-- requirements.txt
+    |-- README.md
+    |-- REPORT.md
+    |-- ui/
+    |   |-- app.py                  # Streamlit entry point
+    |   `-- pages/
+    |       |-- home.py
+    |       |-- dataset_overview.py
+    |       |-- run_experiments_ui.py
+    |       |-- results_viewer.py
+    |       |-- live_classifier.py
+    |       `-- paper_mapping.py
+    |-- tests/
+    |   |-- test_file_pairing.py
+    |   |-- test_role_labels.py
+    |   |-- test_preprocessing.py
+    |   |-- test_data_loader.py
+    |   `-- test_splitting.py
+    `-- results/
+        |-- dataset_inspection_report.txt
+        |-- paper_dataset_mapping.md
+        |-- mla_svm.json / mla_nb.json
+        |-- context_svm.csv / context_nb.csv
+        |-- confusion_matrix_svm.png / confusion_matrix_nb.png
+        `-- experiment_summary.json
+\end{lstlisting}
+
+\subsection{Data Flow}
+
+\begin{center}
+\begin{tabular}{ccccc}
+  \texttt{data\_loader.py}
+  & $\longrightarrow$
+  & \texttt{preprocessing.py}
+  & $\longrightarrow$
+  & \texttt{message\_classifier.py} \\
+  \multicolumn{5}{c}{$\downarrow$} \\
+  \multicolumn{5}{c}{\texttt{actor\_classification.py}} \\
+  \multicolumn{5}{c}{$\downarrow$} \\
+  \multicolumn{5}{c}{\texttt{context\_determination.py}
+    $\longrightarrow$ \texttt{evaluation.py}} \\
+\end{tabular}
+\end{center}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Module Descriptions}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\subsection{\texttt{inspect\_dataset.py}}
+
+Standalone script that analyses the raw dataset and produces
+\texttt{results/dataset\_inspection\_report.txt}. Reports file counts,
+text encoding, utterance statistics, pairing validation, duplicate
+detection, and reproducibility assessment.
+
+\subsection{\texttt{data\_loader.py}}
+
+Core data-access layer. Loads all utterances from both speaker folders
+into a \texttt{pandas.DataFrame} with the following columns:
+
+\begin{itemize}[leftmargin=*]
+  \item \texttt{utterance} --- message text.
+  \item \texttt{speaker\_role} --- \texttt{1} (predator / Adult) or
+        \texttt{0} (officer / Child); assigned from \textbf{file structure
+        only}, never from message content.
+  \item \texttt{conversation\_id} --- username extracted from filename;
+        groups predator and officer utterances from the same conversation.
+  \item \texttt{file\_name} --- source filename for full traceability.
+\end{itemize}
+
+\subsection{\texttt{preprocessing.py}}
+
+\begin{itemize}[leftmargin=*]
+  \item \texttt{minimal\_clean()} --- whitespace strip only (paper \S4.2).
+  \item \texttt{group\_train\_test\_split()} --- 80/20 split by
+        conversation using \texttt{GroupShuffleSplit}; guarantees zero
+        leakage between splits.
+  \item \texttt{build\_count\_vectorizer()} --- fits \texttt{CountVectorizer}
+        on training texts (paper's feature-extraction method).
+  \item \texttt{extract\_labels\_and\_texts()} --- splits a DataFrame into
+        \texttt{(texts, labels)} arrays.
+\end{itemize}
+
+\subsection{\texttt{message\_classifier.py}}
+
+Implements the paper's MLA with four classifiers:
+
+\begin{itemize}[leftmargin=*]
+  \item \texttt{SVMClassifier} --- \texttt{LinearSVC} with calibration.
+  \item \texttt{NaiveBayesClassifier} --- \texttt{MultinomialNB}.
+  \item \texttt{BERTClassifier} --- \texttt{bert-base-uncased}
+        (TensorFlow / HuggingFace).
+  \item \texttt{RoBERTaClassifier} --- \texttt{roberta-base}
+        (TensorFlow / HuggingFace).
+\end{itemize}
+
+Also contains:
+\begin{itemize}[leftmargin=*]
+  \item \texttt{apply\_message\_threshold(proba,~t)} --- implements
+        Equation~\ref{eq:threshold}.
+  \item \texttt{compute\_mla\_metrics(y\_true, y\_pred, \ldots)} ---
+        computes TP\%, IA\%, IC\%, O\%.
+\end{itemize}
+
+\subsection{\texttt{context\_determination.py}}
+
+Implements the paper's Figure~3 algorithm:
+
+\begin{itemize}[leftmargin=*]
+  \item \texttt{determine\_actor\_significance()} --- runs
+        \texttt{scipy.stats.binomtest} and applies AST; returns
+        \textbf{A}, \textbf{C}, or \textbf{NS}.
+  \item \texttt{determine\_transcript\_context()} --- applies the XOR
+        logic (Equation~\ref{eq:ac_rule}) to produce AC or non-AC.
+  \item \texttt{run\_context\_determination()} --- processes a full test
+        DataFrame conversation by conversation.
+  \item \texttt{compute\_context\_metrics()} --- computes TP, FP, TN,
+        FN, F1.
+\end{itemize}
+
+\subsection{\texttt{actor\_classification.py}}
+
+Pipeline bridge between message classifiers and context determination:
+
+\begin{itemize}[leftmargin=*]
+  \item \texttt{attach\_predictions()} --- runs a trained classifier over
+        all test utterances and attaches $P(\text{Adult})$ probabilities.
+  \item \texttt{sweep\_ast\_t\_values()} --- sweeps all combinations of
+        AST $\times$ $t$ and returns a results DataFrame.
+  \item \texttt{run\_full\_actor\_analysis()} --- runs the full sweep for
+        all classifiers.
+\end{itemize}
+
+\subsection{\texttt{evaluation.py}}
+
+\begin{itemize}[leftmargin=*]
+  \item \texttt{compute\_standard\_metrics()} --- accuracy, precision,
+        recall, F1 via \texttt{sklearn}.
+  \item \texttt{plot\_confusion\_matrix()} --- saves a labeled confusion
+        matrix PNG (labeled as speaker-role classification, not grooming).
+  \item \texttt{format\_mla\_table()} / \texttt{format\_context\_table()}
+        --- human-readable results tables.
+  \item \texttt{print\_paper\_comparison()} --- side-by-side display with
+        published results (reference only; never injected into outputs).
+\end{itemize}
+
+\subsection{\texttt{run\_experiments.py}}
+
+Full pipeline orchestration. CLI flags:
+\begin{itemize}[leftmargin=*]
+  \item \texttt{--skip-transformers} --- run SVM and NB only.
+  \item \texttt{--fast} --- sample $N$ conversations for quick
+        verification.
+  \item \texttt{--debug} --- verbose logging.
+\end{itemize}
+
+\subsection{\texttt{ui/} --- Streamlit Web Application}
+
+Six-page interactive web UI (Section~\ref{sec:ui}).
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Experimental Results}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\subsection{Fast-Mode Baseline (50-Conversation Sample)}
+
+The following results were obtained using a 50-conversation sample for
+quick verification. Full dataset results will differ; see
+Section~\ref{sec:paper_results} for the paper's published targets.
+
+\subsubsection{Message-Level Analysis}
+
+\begin{table}[H]
+  \centering
+  \caption{MLA Results --- Fast Mode (50 conversations, 10-conversation test set)}
+  \begin{tabular}{lrrrr}
+    \toprule
+    \textbf{Model} & \textbf{TP\%} & \textbf{IA\%} & \textbf{IC\%} &
+    \textbf{O\%} \\
+    \midrule
+    SVM & 61.8 & 28.7 & 9.5 & 0.0 \\
+    NB  & 57.0 & 35.2 & 7.8 & 0.0 \\
+    \bottomrule
+  \end{tabular}
+  \label{tab:mla_fast}
+\end{table}
+
+\begin{infobox}
+These are \textbf{speaker-role classification} metrics (Adult vs.\ Child
+language style). They are \textbf{not} grooming detection metrics. Lower
+TP\% compared to the paper is expected: fast mode trains on approximately
+85\,000 utterances, whereas the paper uses over 219\,000.
+\end{infobox}
+
+\subsubsection{Context Determination (10 Test Conversations)}
+
+\begin{table}[H]
+  \centering
+  \caption{Context Determination --- Fast Mode}
+  \begin{tabular}{llrrrrr}
+    \toprule
+    \textbf{Model} & \textbf{AST} & \textbf{TP} & \textbf{FN} &
+    \textbf{FP} & \textbf{TN} & \textbf{F1} \\
+    \midrule
+    SVM & 0.050 & 4 & 3 & 0 & 0 & 0.727 \\
+    SVM & 0.010 & 4 & 3 & 0 & 0 & 0.727 \\
+    SVM & 0.001 & 4 & 3 & 0 & 0 & 0.727 \\
+    \addlinespace
+    NB  & 0.050 & 5 & 2 & 0 & 0 & 0.833 \\
+    NB  & 0.010 & 5 & 2 & 0 & 0 & 0.833 \\
+    NB  & 0.001 & 5 & 2 & 0 & 0 & 0.833 \\
+    \bottomrule
+  \end{tabular}
+  \label{tab:ctx_fast}
+\end{table}
+
+FP$=0$ and TN$=0$ are correct and expected because all PJ conversations
+are OG-positive; there are no true negative transcripts in this dataset.
+
+\subsection{Paper Published Results (Reference Only)}
+\label{sec:paper_results}
+
+\begin{cautionbox}
+These values are from Street et al.\ (2025) and are shown for comparison
+only. They are never embedded in experiment outputs or used to validate
+our runs.
+\end{cautionbox}
+
+\subsubsection{MLA --- PJ Dataset, Inter-Set (Paper Table 2)}
+
+\begin{table}[H]
+  \centering
+  \caption{Paper MLA Results --- PJ Dataset, Inter-Set Training}
+  \begin{tabular}{llrrrr}
+    \toprule
+    \textbf{Model} & \textbf{$t$} & \textbf{TP\%} & \textbf{IA\%} &
+    \textbf{IC\%} & \textbf{O\%} \\
+    \midrule
+    SVM       & ---  & 76.0 & 13.5 & 10.5 &  0.0 \\
+    NB        & ---  & 74.7 & 12.0 & 13.3 &  0.0 \\
+    BERT      & 0.20 & 82.2 &  9.3 &  8.5 &  9.2 \\
+    BERT      & 0.45 & 87.3 &  7.1 &  5.6 & 30.0 \\
+    RoBERTa   & 0.20 & 83.3 &  7.7 &  9.0 &  8.8 \\
+    RoBERTa   & 0.45 & 88.8 &  5.3 &  5.9 & 30.4 \\
+    \bottomrule
+  \end{tabular}
+  \label{tab:mla_paper}
+\end{table}
+
+\subsubsection{Context Determination --- PJ, AST$=0.05$ (Paper Table 4)}
+
+\begin{table}[H]
+  \centering
+  \caption{Paper Context Determination Results --- PJ Dataset, AST$=0.05$}
+  \begin{tabular}{lrrr}
+    \toprule
+    \textbf{Model} & \textbf{TP} & \textbf{FN} & \textbf{F1} \\
+    \midrule
+    SVM                   & 118 & 35 & 0.871 \\
+    NB                    & 116 & 37 & 0.862 \\
+    BERT ($t=0.2$)        & 143 & 10 & 0.966 \\
+    RoBERTa ($t=0.45$)    & 145 &  8 & 0.973 \\
+    \bottomrule
+  \end{tabular}
+  \label{tab:ctx_paper}
+\end{table}
+
+\subsection{Reasons Our Results Differ from the Paper}
+
+\begin{enumerate}[leftmargin=*, label=\textbf{\arabic*.}]
+  \item \textbf{Dataset version:} The paper parsed HTML directly from
+        perverted-justice.com; this repository is a pre-cleaned subset
+        of 622 conversations.
+  \item \textbf{Training set size:} Fast mode uses 50 conversations;
+        the paper uses the full dataset.
+  \item \textbf{Framework:} The paper uses TensorFlow throughout; SVM
+        and NB here use \texttt{sklearn} (consistent with the paper's
+        own \texttt{sklearn} reference).
+  \item \textbf{Randomness:} Split randomness affects results
+        significantly on small samples.
+\end{enumerate}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Web User Interface}
+\label{sec:ui}
+% ══════════════════════════════════════════════════════════════════════════════
+
+A six-page Streamlit web application provides interactive access to all
+functionality. Start the application with:
+
+\begin{lstlisting}
+cd grooming_detection
+python -m streamlit run ui/app.py
+# Opens at http://localhost:8501
+\end{lstlisting}
+
+\begin{table}[H]
+  \centering
+  \caption{Web UI Pages and Their Functionality}
+  \begin{tabularx}{\linewidth}{>{\bfseries}lX}
+    \toprule
+    Page & Description \\
+    \midrule
+    Home &
+      Status dashboard showing dataset availability, file counts, test
+      pass rate, and constraint warnings. \\
+    \addlinespace
+    Dataset Overview &
+      Interactive histograms of utterances per file, role balance pie
+      chart, pairing analysis, and a searchable per-file table. \\
+    \addlinespace
+    Run Experiments &
+      Interactive controls: model selection, test-split slider, fast mode,
+      AST sweep. Streams live training progress and displays results
+      inline. \\
+    \addlinespace
+    Results \& Metrics &
+      MLA grouped bar chart, context determination F1 heatmap (AST
+      $\times$ model), confusion matrix images, and side-by-side
+      comparison with paper reference results. \\
+    \addlinespace
+    Live Classifier &
+      Real-time message classification with a probability gauge; batch
+      classification with a colour-coded table; demo conversation with
+      chat-bubble UI. \\
+    \addlinespace
+    Paper Mapping &
+      Full reproducibility table, three-task explanation (MLA vs.\
+      actor significance vs.\ context determination), and the raw
+      dataset inspection report. \\
+    \bottomrule
+  \end{tabularx}
+  \label{tab:ui_pages}
+\end{table}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Test Suite}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\textbf{88 tests, all passing.}
+
+\begin{lstlisting}
+python -m pytest grooming_detection/tests/ -v
+# 88 passed in 13.60s
+\end{lstlisting}
+
+\begin{table}[H]
+  \centering
+  \caption{Test Files and Coverage}
+  \begin{tabularx}{\linewidth}{lrX}
+    \toprule
+    \textbf{File} & \textbf{Tests} & \textbf{What is Verified} \\
+    \midrule
+    \texttt{test\_file\_pairing.py}   & 14 &
+      Filename parsing, predator/officer file counts, multi-officer
+      suffix handling, no duplicates, no empty files. \\
+    \addlinespace
+    \texttt{test\_role\_labels.py}    &  9 &
+      Labels assigned from file structure not content; both roles
+      present; no \texttt{is\_grooming} column. \\
+    \addlinespace
+    \texttt{test\_preprocessing.py}  & 18 &
+      Minimal cleaning preserves punctuation and casing; group split
+      has zero conversation leakage; reproducibility with fixed seed. \\
+    \addlinespace
+    \texttt{test\_data\_loader.py}   & 11 &
+      Temp-directory loading; multi-officer files; min-utterance filter;
+      null check; conversation count. \\
+    \addlinespace
+    \texttt{test\_splitting.py}      & 20 &
+      Group integrity; message threshold boundary (Eq.~\ref{eq:threshold});
+      MLA metric correctness; binomial test direction; AC/non-AC XOR logic. \\
+    \midrule
+    \textbf{Total} & \textbf{72} & \emph{Unit tests (no dataset required)} \\
+    & \textbf{16} & \emph{Integration tests (dataset required)} \\
+    \bottomrule
+  \end{tabularx}
+  \label{tab:tests}
+\end{table}
+
+\subsection{Key Safety Tests}
+
+\begin{itemize}[leftmargin=*]
+  \item \textbf{No conversation leakage} --- \texttt{test\_zero\_conversation\_overlap}
+        verifies train/test conversation IDs are disjoint.
+  \item \textbf{Label source} ---
+        \texttt{test\_label\_source\_is\_file\_structure\_not\_content}
+        verifies labels are derived from folder membership, not from message
+        text.
+  \item \textbf{No grooming column} ---
+        \texttt{test\_label\_docstring\_warning\_not\_violated} asserts
+        no \texttt{is\_grooming} column is created.
+  \item \textbf{Threshold boundaries} ---
+        \texttt{test\_boundary\_values\_not\_omitted} verifies the strict
+        inequality in Equation~\ref{eq:threshold}.
+  \item \textbf{XOR logic} ---
+        \texttt{test\_both\_adult\_not\_ac} and
+        \texttt{test\_ns\_in\_either\_position\_not\_ac} verify that the
+        context rule correctly rejects invalid configurations.
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Known Limitations}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\subsection{Dataset Limitations}
+
+\begin{table}[H]
+  \centering
+  \caption{Dataset-Level Limitations}
+  \begin{tabularx}{\linewidth}{>{\raggedright}p{3.8cm}
+                               >{\raggedright}p{4cm}
+                               X}
+    \toprule
+    \textbf{Limitation} & \textbf{Impact} & \textbf{Path to Resolve} \\
+    \midrule
+    Timestamps removed &
+      Phase-based analysis and early detection cannot be reproduced. &
+      Document and skip those paper components. \\
+    \addlinespace
+    All-positive dataset &
+      FP$=0$, TN$=0$ --- false positive rate cannot be measured. &
+      Add PAN12 dataset for cross-dataset evaluation. \\
+    \addlinespace
+    Officers are adult volunteers &
+      Child language model may not generalise to real children. &
+      Acknowledge in all reporting. \\
+    \addlinespace
+    622 conversations only &
+      Smaller than the full PJ corpus used in the paper. &
+      Use the full dataset for final runs. \\
+    \bottomrule
+  \end{tabularx}
+  \label{tab:dataset_limits}
+\end{table}
+
+\subsection{Implementation Limitations}
+
+\begin{table}[H]
+  \centering
+  \caption{Implementation-Level Limitations}
+  \begin{tabularx}{\linewidth}{>{\raggedright}p{4.5cm}
+                               >{\raggedright}p{3.5cm}
+                               X}
+    \toprule
+    \textbf{Limitation} & \textbf{Impact} & \textbf{Path to Resolve} \\
+    \midrule
+    BERT/RoBERTa require TensorFlow + GPU &
+      Transformer experiments not runnable on CPU-only machines. &
+      Install \texttt{tensorflow==2.17.0} and run on GPU. \\
+    \addlinespace
+    PAN12 not included &
+      Cross-dataset F1 scores (paper Tables~5--7) not reproduced. &
+      Download PAN12 separately and add \texttt{pan12\_loader.py}. \\
+    \addlinespace
+    Fast-mode results differ from paper &
+      Expected --- not all 622 conversations are used. &
+      Run without \texttt{--fast} for full results. \\
+    \bottomrule
+  \end{tabularx}
+  \label{tab:impl_limits}
+\end{table}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section{Reproduction Instructions}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\subsection{Prerequisites}
+
+\begin{lstlisting}
+# Python 3.10+
+pip install -r grooming_detection/requirements.txt
+
+# For BERT/RoBERTa (optional, GPU recommended):
+pip install tensorflow==2.17.0
+\end{lstlisting}
+
+\subsection{Step-by-Step}
+
+\begin{lstlisting}
+# 1. Clone dataset
+git clone https://github.com/helenkoutli/PervertedJusticeDataset.git
+
+# 2. Inspect dataset
+python grooming_detection/inspect_dataset.py
+
+# 3. Run test suite
+python -m pytest grooming_detection/tests/ -v
+
+# 4. Quick verification (50 conversations, ~30 seconds)
+python grooming_detection/run_experiments.py --skip-transformers --fast
+
+# 5. Full SVM + NB on complete dataset
+python grooming_detection/run_experiments.py --skip-transformers
+
+# 6. Full pipeline with BERT + RoBERTa (GPU required)
+python grooming_detection/run_experiments.py
+
+# 7. Launch web UI
+python -m streamlit run grooming_detection/ui/app.py
+\end{lstlisting}
+
+\subsection{Expected Outputs}
+
+After running Step~5 (full SVM + NB):
+
+\begin{lstlisting}
+results/
+|-- dataset_inspection_report.txt   # dataset statistics
+|-- paper_dataset_mapping.md        # reproducibility table
+|-- mla_svm.json                    # SVM MLA metrics
+|-- mla_nb.json                     # NB MLA metrics
+|-- context_svm.csv                 # SVM context determination sweep
+|-- context_nb.csv                  # NB context determination sweep
+|-- confusion_matrix_svm.png        # SVM confusion matrix
+|-- confusion_matrix_nb.png         # NB confusion matrix
+`-- experiment_summary.json         # combined summary
+\end{lstlisting}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\section*{References}
+\addcontentsline{toc}{section}{References}
+% ══════════════════════════════════════════════════════════════════════════════
+
+\begin{enumerate}[leftmargin=*, label={[\arabic*]}]
+
+  \item Street, J., Ihianle, I.K., Olajide, F., \& Lotfi, A. (2025).
+        Enhanced online grooming detection employing context determination
+        and message-level analysis.
+        \textit{Intelligent Systems with Applications}, 28, 200607.
+        \href{https://doi.org/10.1016/j.iswa.2025.200607}
+             {\texttt{doi:10.1016/j.iswa.2025.200607}}
+
+  \item Koutli, E. (2023). PervertedJusticeDataset [Dataset].
+        GitHub.
+        \href{https://github.com/helenkoutli/PervertedJusticeDataset}
+             {\texttt{github.com/helenkoutli/PervertedJusticeDataset}}
+
+  \item Pedregosa, F. et al.\ (2011). Scikit-learn: Machine learning in
+        Python. \textit{Journal of Machine Learning Research}, 12,
+        2825--2830.
+
+  \item Devlin, J., Chang, M.W., Lee, K., \& Toutanova, K. (2019).
+        BERT: Pre-training of deep bidirectional transformers for language
+        understanding. \textit{NAACL-HLT 2019}, 4171--4186.
+
+  \item Liu, Y. et al.\ (2019). RoBERTa: A robustly optimised BERT
+        pretraining approach. \textit{arXiv:1907.11692}.
+
+  \item Perverted Justice Foundation.
+        \href{http://www.perverted-justice.com}
+             {\texttt{www.perverted-justice.com}}
+
+\end{enumerate}
+
+% ══════════════════════════════════════════════════════════════════════════════
+\vfill
+\begin{center}
+  \small\textit{Report generated for BTP-demo project.}\\
+  \small\textit{Dataset used for academic research only.}
+\end{center}
+
+\end{document}

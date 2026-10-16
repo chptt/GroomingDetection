@@ -3,6 +3,10 @@ app.py — Main Streamlit entry point
 
 Online Grooming Detection UI
 Implementation of Street et al. (2025)
+
+NOTE: Page modules live in ui/_pages/ (not ui/pages/) so Streamlit does NOT
+auto-generate a second navigation bar from them. All navigation is handled
+by the custom sidebar radio below.
 """
 
 import sys
@@ -21,11 +25,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Sidebar nav ─────────────────────────────────────────────────────────────
-st.sidebar.image(
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Scikit_learn_logo_small.svg/260px-Scikit_learn_logo_small.svg.png",
-    width=80,
-)
+# ── Sidebar nav ──────────────────────────────────────────────────────────────
 st.sidebar.title("🔍 Grooming Detection")
 st.sidebar.caption("Street et al. (2025) · PJ Dataset")
 st.sidebar.markdown("---")
@@ -40,30 +40,32 @@ page = st.sidebar.radio(
         "💬 Live Classifier",
         "📄 Paper Mapping",
     ],
+    label_visibility="collapsed",
 )
 
 st.sidebar.markdown("---")
 st.sidebar.markdown(
     "**Dataset:** [PervertedJustice](https://github.com/helenkoutli/PervertedJusticeDataset)  \n"
-    "**Paper:** Street et al. (2025)"
+    "**Paper:** Street et al. (2025)  \n"
+    "**Repo:** [chptt/GroomingDetection](https://github.com/chptt/GroomingDetection)"
 )
 
-# ── Route to page ────────────────────────────────────────────────────────────
+# ── Route to page ─────────────────────────────────────────────────────────────
 if page == "🏠 Home":
-    from pages import home
+    from _pages import home
     home.show()
 elif page == "📊 Dataset Overview":
-    from pages import dataset_overview
+    from _pages import dataset_overview
     dataset_overview.show()
 elif page == "🤖 Run Experiments":
-    from pages import run_experiments_ui
+    from _pages import run_experiments_ui
     run_experiments_ui.show()
 elif page == "📈 Results & Metrics":
-    from pages import results_viewer
+    from _pages import results_viewer
     results_viewer.show()
 elif page == "💬 Live Classifier":
-    from pages import live_classifier
+    from _pages import live_classifier
     live_classifier.show()
 elif page == "📄 Paper Mapping":
-    from pages import paper_mapping
+    from _pages import paper_mapping
     paper_mapping.show()

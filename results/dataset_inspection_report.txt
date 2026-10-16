@@ -1,0 +1,105 @@
+================================================================================
+PERVERTED JUSTICE DATASET INSPECTION REPORT
+================================================================================
+
+## 1. FILE COUNTS
+Predator files: 621
+Officer files:  638
+
+## 2. FILE NAMING PATTERNS
+Predator prefix pattern: 'predator_<username>.txt'
+Officer prefix pattern:  'officer_<username>.txt'
+Sample predator names: ['a_latino_man559', 'abraxisreborn', 'ACAR556', 'adams217', 'aggresk8er']
+Sample officer names:  ['a_latino_man559', 'abraxisreborn', 'ACAR556', 'adams217', 'aggresk8er']
+
+## 3. FILE PAIRING ANALYSIS
+Conversations with both predator and officer files: 609
+Predator files without matching officer: 12
+Officer files without matching predator: 29
+  Predator-only files (first 10): ['ben_taul2000', 'cantonguy4fun', 'centgaguy04', 'green_eye_latino669', 'jayolla21', 'johnchess2000', 'kalowoodsman', 'meatrocket8', 'readyto_fck', 'southbayguy310']
+  Officer-only files (first 10): ['ben_taul2000_1', 'ben_taul2000_2', 'cantonguy4fun_1', 'cantonguy4fun_2', 'centgaguy04_1', 'centgaguy04_2', 'green_eye_latino669_1', 'green_eye_latino669_2', 'jayolla21_1', 'jayolla21_2']
+
+## 4. TEXT ENCODING AND FILE FORMAT
+Sample predator file encoding: ascii (confidence: 1.00)
+Sample officer file encoding:  ascii (confidence: 1.00)
+
+## 5. UTTERANCE COUNTS PER FILE
+Predator utterances:
+  Min: 33, Max: 15854, Mean: 1137.2, Total: 706214
+Officer utterances:
+  Min: 8, Max: 15938, Mean: 1039.1, Total: 662925
+
+## 6. EMPTY FILES
+Empty predator files: 0
+Empty officer files: 0
+
+## 7. METADATA FILES
+meta.tsv: 623 lines (including header)
+  Columns: name	date	place	comment	report	chatlog
+url_name.tsv: 1244 lines
+
+## 8. CONVERSATION IDENTIFIER
+The username (extracted from filename after 'predator_' or 'officer_')
+serves as the conversation ID. This maps predator/officer file pairs.
+
+NOTE: According to the README, 12 conversations have multiple officers
+and 2 predator files were merged. This explains the file count mismatch.
+
+## 9. MESSAGE ORDER AND CHRONOLOGICAL CONTEXT
+✗ MISSING: Timestamps were removed during cleaning
+✗ MISSING: Original message order (chronological interleaving) is lost
+✗ MISSING: Cannot reconstruct turn-by-turn conversation flow
+
+Each file contains all utterances from ONE speaker, but:
+- We cannot determine which predator message came before/after which officer message
+- We cannot measure response times or detect grooming phase progression
+- Message sequence within each file MAY preserve that speaker's chronological order,
+  but this is not documented and should not be assumed.
+
+================================================================================
+## 10. PAPER REPRODUCIBILITY ASSESSMENT
+================================================================================
+
+### What CAN be reproduced:
+
+✓ Message-Level Analysis (MLA) for Adult vs. Child classification
+  - Each line is an utterance from a known speaker (predator=Adult, officer=Child)
+  - Train SVM, NB, BERT, RoBERTa to classify individual messages
+  - Metrics: TP, IA (Incorrect Adult), IC (Incorrect Child), O (Omissions)
+  - Message Threshold (t) omission: Eq. (1) from paper applies
+
+✓ Context Determination per conversation
+  - Aggregate per-actor message predictions using binomial test
+  - Actor Significance Threshold (AST) p-value test
+  - Transcript-level Adult-Child (AC) context determination
+  - Metrics: TP, FP, TN, FN, F1 for detecting AC interactions
+
+✓ Group-based train/test splits (80/20 by conversation, not message)
+
+### What CANNOT be reproduced exactly:
+
+✗ Phase-based analysis (O'Connell 2003 grooming stages)
+  - Requires chronological message order, which is not preserved
+
+✗ Turn-level or sequential context features
+  - Cannot measure response times, turn-taking patterns, or topic shifts
+
+✗ Early detection experiments
+  - Requires progressive message disclosure in original order
+
+### Important clarifications:
+
+• Speaker role ≠ Message-level grooming label
+  - Predator utterances are from adults, but not every message is 'grooming'
+  - Officer utterances are from honeypot actors, not real children
+  - MLA classifies Adult vs. Child language, NOT grooming vs. non-grooming
+
+• Context Determination determines if conversation involves Adult+Child
+  - All PJ transcripts are OG-positive by design (no true negatives)
+  - Cross-dataset evaluation (PAN12) provides negative examples
+
+• No ground-truth per-message grooming labels exist in this dataset
+
+## 11. DUPLICATE DETECTION
+Duplicate predator files (sampled 100): 0
+Duplicate officer files (sampled 100): 0

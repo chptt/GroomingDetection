@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# Pytest
+.pytest_cache/
+.hypothesis/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/
+
+# Large model files (download at runtime)
+*.bin
+*.safetensors
+*.pt
+*.pth
+models/
+
+# Keep results directory but ignore large intermediate files
+results/*.pkl
+results/*.joblib
+
+# Dataset is in a sibling directory — not included in this repo
+# Clone from: https://github.com/helenkoutli/PervertedJusticeDataset.git

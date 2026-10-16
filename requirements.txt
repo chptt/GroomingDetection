@@ -1,0 +1,31 @@
+# Core dependencies for Online Grooming Detection Implementation
+# Paper: "Enhanced Online Grooming Detection Employing Context Determination 
+#         and Message-Level Analysis" by Street et al. (2025)
+
+# Data handling
+numpy==1.26.4
+pandas==2.2.2
+
+# Traditional ML (SVM, Naive Bayes)
+scikit-learn==1.5.0
+
+# Transformer models (BERT, RoBERTa)
+# Paper uses TensorFlow for transformers
+tensorflow==2.17.0
+transformers==4.44.2
+
+# Statistical tests (binomial test for Actor Significance)
+scipy==1.13.1
+
+# Visualization
+matplotlib==3.9.0
+seaborn==0.13.2
+
+# Text encoding detection
+chardet==5.2.0
+
+# Testing
+pytest==8.2.2
+
+# Progress bars (optional, for long training runs)
+tqdm==4.66.4

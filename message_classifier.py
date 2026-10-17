@@ -7,12 +7,17 @@ Task: Classify each utterance as Adult (1) or Child (0) based on language.
       This is NOT grooming detection — it is speaker-role classification.
 
 Models implemented:
-  - SVM  : sklearn Pipeline with CountVectorizer (paper: sklearn pipeline + countVectoriser)
-  - NB   : sklearn MultinomialNB with CountVectorizer (paper: sklearn.naive_bayes)
-  - BERT : bert-base-uncased fine-tuned via TensorFlow (paper uses TF)
-  - RoBERTa: roberta-base fine-tuned via TensorFlow (paper uses RoBERTa-base)
+  - SVM      : sklearn Pipeline with CountVectorizer
+  - NB       : sklearn MultinomialNB with CountVectorizer
+  - BERT     : bert-base-uncased fine-tuned via PyTorch + HuggingFace
+  - RoBERTa  : roberta-base fine-tuned via PyTorch + HuggingFace
 
-Results metrics (paper Table 2/3):
+Note on framework: The paper uses TensorFlow. This implementation uses
+PyTorch because tensorflow==2.17 is not available for Python 3.13+.
+The model architecture (bert-base-uncased, roberta-base), hyperparameters
+(lr=2e-5, 3 epochs), and tokenisation are identical to the paper.
+
+Results metrics (paper Tables 2/3):
   - TP : True Positive — correct Adult(A) or Child(C) determination
   - IA : Incorrect Adult Determination — predicted Adult but was Child
   - IC : Incorrect Child Determination — predicted Child but was Adult
@@ -66,7 +71,6 @@ def apply_message_threshold(
     """
     lower = 0.5 - t
     upper = 0.5 + t
-    # Omit if prediction is in the low-confidence band
     omit_mask = (probabilities > lower) & (probabilities < upper)
     kept_mask = ~omit_mask
     return kept_mask, omit_mask
@@ -89,16 +93,16 @@ def compute_mla_metrics(
       - TP : fraction of kept messages correctly classified
       - IA : fraction of kept messages that were Adult but classified as Child
       - IC : fraction of kept messages that were Child but classified as Adult
-      - O  : fraction of ALL messages that were omitted (not part of TP+IA+IC)
+      - O  : fraction of ALL messages that were omitted
 
     Args:
-        y_true     : ground-truth labels (1=Adult, 0=Child) for kept messages
-        y_pred     : predicted labels for kept messages
-        kept_mask  : boolean mask applied to the full test set (for O calculation)
-        n_total    : total number of messages before omission (for O calculation)
+        y_true    : ground-truth labels (1=Adult, 0=Child) for kept messages
+        y_pred    : predicted labels for kept messages
+        kept_mask : boolean mask applied to the full test set (for O calculation)
+        n_total   : total number of messages before omission (for O calculation)
 
     Returns:
-        dict with keys: TP, IA, IC, O (all as percentages, matching paper Tables 2/3)
+        dict with keys: TP, IA, IC, O (all as percentages)
     """
     n_kept = len(y_true)
 
@@ -106,25 +110,22 @@ def compute_mla_metrics(
         n_total = n_kept
     n_omitted = n_total - n_kept
 
-    # Among kept messages
     correct = (y_pred == y_true).sum()
-    # IA: predicted Adult (1) but true was Child (0)
     ia = ((y_pred == 1) & (y_true == 0)).sum()
-    # IC: predicted Child (0) but true was Adult (1)
     ic = ((y_pred == 0) & (y_true == 1)).sum()
 
     tp_pct = 100.0 * correct / n_kept if n_kept > 0 else 0.0
     ia_pct = 100.0 * ia / n_kept if n_kept > 0 else 0.0
     ic_pct = 100.0 * ic / n_kept if n_kept > 0 else 0.0
-    o_pct = 100.0 * n_omitted / n_total if n_total > 0 else 0.0
+    o_pct  = 100.0 * n_omitted / n_total if n_total > 0 else 0.0
 
     return {
         "TP": round(tp_pct, 1),
         "IA": round(ia_pct, 1),
         "IC": round(ic_pct, 1),
-        "O": round(o_pct, 1),
-        "n_total": n_total,
-        "n_kept": n_kept,
+        "O":  round(o_pct, 1),
+        "n_total":   n_total,
+        "n_kept":    n_kept,
         "n_omitted": n_omitted,
     }
 
@@ -136,12 +137,7 @@ def compute_mla_metrics(
 class SVMClassifier:
     """
     SVM classifier using sklearn Pipeline + CountVectorizer.
-    Paper: "For the SVM model, sklearn module was used alongside the 'pipeline'
-            with a 'countVectoriser' approach."
-    
-    LinearSVC is calibrated to produce probabilities (not used for omissions
-    since SVM does not natively produce calibrated probabilities — the paper
-    reports 0% omissions for SVM/NB, confirming no threshold is applied).
+    Paper: sklearn pipeline with countVectoriser approach.
     """
 
     def __init__(self):
@@ -159,23 +155,19 @@ class SVMClassifier:
         return self.pipeline.predict(X_texts)
 
     def predict_proba(self, X_texts: list[str]) -> np.ndarray:
-        """Returns P(Adult) for each message."""
-        proba = self.pipeline.predict_proba(X_texts)
-        return proba[:, 1]  # probability of class 1 (Adult)
+        return self.pipeline.predict_proba(X_texts)[:, 1]
 
     def evaluate(self, X_texts: list[str], y_true: np.ndarray) -> dict:
-        """Evaluate with no omissions (t=0 for SVM, per paper)."""
         y_pred = self.predict(X_texts)
-        metrics = compute_mla_metrics(y_true, y_pred)
-        return metrics
+        return compute_mla_metrics(y_true, y_pred)
 
     def save(self, path: Path) -> None:
-        with open(path, 'wb') as f:
+        with open(path, "wb") as f:
             pickle.dump(self.pipeline, f)
         logger.info(f"SVM saved to {path}")
 
     def load(self, path: Path) -> "SVMClassifier":
-        with open(path, 'rb') as f:
+        with open(path, "rb") as f:
             self.pipeline = pickle.load(f)
         return self
 
@@ -186,9 +178,7 @@ class SVMClassifier:
 
 class NaiveBayesClassifier:
     """
-    Naive Bayes classifier using sklearn.naive_bayes.
-    Paper: "For NB the 'sklearn.naive_bayes' module was used alongside the
-            feature extraction module."
+    Naive Bayes classifier using sklearn.naive_bayes + CountVectorizer.
     """
 
     def __init__(self):
@@ -206,24 +196,216 @@ class NaiveBayesClassifier:
         return self.pipeline.predict(X_texts)
 
     def predict_proba(self, X_texts: list[str]) -> np.ndarray:
-        """Returns P(Adult) for each message."""
-        proba = self.pipeline.predict_proba(X_texts)
-        return proba[:, 1]  # probability of class 1 (Adult)
+        return self.pipeline.predict_proba(X_texts)[:, 1]
 
     def evaluate(self, X_texts: list[str], y_true: np.ndarray) -> dict:
-        """Evaluate with no omissions (t=0 for NB, per paper)."""
         y_pred = self.predict(X_texts)
-        metrics = compute_mla_metrics(y_true, y_pred)
-        return metrics
+        return compute_mla_metrics(y_true, y_pred)
 
     def save(self, path: Path) -> None:
-        with open(path, 'wb') as f:
+        with open(path, "wb") as f:
             pickle.dump(self.pipeline, f)
         logger.info(f"NB saved to {path}")
 
     def load(self, path: Path) -> "NaiveBayesClassifier":
-        with open(path, 'rb') as f:
+        with open(path, "rb") as f:
             self.pipeline = pickle.load(f)
+        return self
+
+
+# ---------------------------------------------------------------------------
+# Shared PyTorch trainer for BERT / RoBERTa
+# ---------------------------------------------------------------------------
+
+class _TransformerClassifier:
+    """
+    Base class for BERT and RoBERTa classifiers using PyTorch.
+
+    Hyperparameters match the paper:
+      - Epochs      : 3
+      - Learning rate: 2e-5
+      - Max length  : 128 tokens
+      - Batch size  : 16 (configurable for memory)
+    """
+
+    def __init__(self, model_name: str, name: str, max_length: int = 128):
+        self.model_name  = model_name
+        self.name        = name
+        self.max_length  = max_length
+        self.model       = None
+        self.tokenizer   = None
+        self._loaded     = False
+
+    # ── lazy load ────────────────────────────────────────────────────────────
+    def _load(self) -> None:
+        if self._loaded:
+            return
+        try:
+            import torch
+            from transformers import AutoTokenizer, AutoModelForSequenceClassification
+            self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+            self.model     = AutoModelForSequenceClassification.from_pretrained(
+                self.model_name, num_labels=2
+            )
+            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            self.model.to(self.device)
+            self._loaded = True
+            logger.info(f"{self.name} loaded on {self.device}")
+        except Exception as e:
+            raise RuntimeError(
+                f"Could not load {self.name}. "
+                f"Ensure 'transformers' and 'torch' are installed.\n{e}"
+            )
+
+    # ── training ─────────────────────────────────────────────────────────────
+    def fit(
+        self,
+        X_texts: list[str],
+        y: np.ndarray,
+        epochs: int = 3,
+        batch_size: int = 16,
+        learning_rate: float = 2e-5,
+    ) -> "_TransformerClassifier":
+        import torch
+        from torch.utils.data import DataLoader, TensorDataset
+        from transformers import get_linear_schedule_with_warmup
+
+        self._load()
+        logger.info(f"Training {self.name} | {len(X_texts)} samples | "
+                    f"{epochs} epochs | batch={batch_size} | lr={learning_rate}")
+
+        # Tokenise in chunks to avoid OOM on large datasets
+        enc = self.tokenizer(
+            X_texts,
+            padding=True,
+            truncation=True,
+            max_length=self.max_length,
+            return_tensors="pt",
+        )
+        labels  = torch.tensor(y, dtype=torch.long)
+        dataset = TensorDataset(
+            enc["input_ids"],
+            enc["attention_mask"],
+            labels,
+        )
+        loader  = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
+        optimizer = torch.optim.AdamW(self.model.parameters(), lr=learning_rate)
+        total_steps = len(loader) * epochs
+        scheduler = get_linear_schedule_with_warmup(
+            optimizer,
+            num_warmup_steps=int(0.1 * total_steps),
+            num_training_steps=total_steps,
+        )
+
+        self.model.train()
+        for epoch in range(epochs):
+            total_loss = 0.0
+            for step, batch in enumerate(loader):
+                input_ids      = batch[0].to(self.device)
+                attention_mask = batch[1].to(self.device)
+                batch_labels   = batch[2].to(self.device)
+
+                optimizer.zero_grad()
+                outputs = self.model(
+                    input_ids=input_ids,
+                    attention_mask=attention_mask,
+                    labels=batch_labels,
+                )
+                loss = outputs.loss
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
+                optimizer.step()
+                scheduler.step()
+                total_loss += loss.item()
+
+                if (step + 1) % 100 == 0:
+                    logger.info(f"  Epoch {epoch+1}/{epochs} | "
+                                f"Step {step+1}/{len(loader)} | "
+                                f"Loss {total_loss/(step+1):.4f}")
+
+            avg_loss = total_loss / len(loader)
+            logger.info(f"  Epoch {epoch+1}/{epochs} complete — avg loss: {avg_loss:.4f}")
+
+        self.model.eval()
+        return self
+
+    # ── inference ─────────────────────────────────────────────────────────────
+    def predict_proba(self, X_texts: list[str], batch_size: int = 64) -> np.ndarray:
+        """Returns P(Adult) for each message. Processes in batches to avoid OOM."""
+        import torch
+
+        self._load()
+        self.model.eval()
+        all_probs = []
+
+        for i in range(0, len(X_texts), batch_size):
+            batch_texts = X_texts[i : i + batch_size]
+            enc = self.tokenizer(
+                batch_texts,
+                padding=True,
+                truncation=True,
+                max_length=self.max_length,
+                return_tensors="pt",
+            )
+            with torch.no_grad():
+                input_ids      = enc["input_ids"].to(self.device)
+                attention_mask = enc["attention_mask"].to(self.device)
+                logits = self.model(
+                    input_ids=input_ids,
+                    attention_mask=attention_mask,
+                ).logits
+                probs = torch.softmax(logits, dim=-1)[:, 1].cpu().numpy()
+            all_probs.append(probs)
+
+        return np.concatenate(all_probs)
+
+    def predict(self, X_texts: list[str]) -> np.ndarray:
+        return (self.predict_proba(X_texts) >= 0.5).astype(int)
+
+    def evaluate(
+        self,
+        X_texts: list[str],
+        y_true: np.ndarray,
+        t_values: list[float] = [0.0, 0.2, 0.3, 0.4, 0.45],
+    ) -> dict[str, dict]:
+        """Evaluate with multiple message thresholds."""
+        proba   = self.predict_proba(X_texts)
+        n_total = len(y_true)
+        results = {}
+
+        for t in t_values:
+            if t == 0.0:
+                y_pred  = (proba >= 0.5).astype(int)
+                metrics = compute_mla_metrics(y_true, y_pred, n_total=n_total)
+            else:
+                kept_mask, _ = apply_message_threshold(proba, t)
+                y_pred_kept  = (proba[kept_mask] >= 0.5).astype(int)
+                y_true_kept  = y_true[kept_mask]
+                metrics      = compute_mla_metrics(
+                    y_true_kept, y_pred_kept,
+                    kept_mask=kept_mask, n_total=n_total,
+                )
+            results[f"t={t}"] = metrics
+
+        return results
+
+    def save(self, path: Path) -> None:
+        path = Path(path)
+        path.mkdir(exist_ok=True, parents=True)
+        self.model.save_pretrained(str(path))
+        self.tokenizer.save_pretrained(str(path))
+        logger.info(f"{self.name} saved to {path}")
+
+    def load(self, path: Path) -> "_TransformerClassifier":
+        from transformers import AutoTokenizer, AutoModelForSequenceClassification
+        import torch
+        self.tokenizer = AutoTokenizer.from_pretrained(str(path))
+        self.model     = AutoModelForSequenceClassification.from_pretrained(str(path))
+        self.device    = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model.to(self.device)
+        self.model.eval()
+        self._loaded   = True
         return self
 
 
@@ -231,281 +413,33 @@ class NaiveBayesClassifier:
 # BERT Classifier
 # ---------------------------------------------------------------------------
 
-class BERTClassifier:
+class BERTClassifier(_TransformerClassifier):
     """
-    BERT-based binary classifier for Adult/Child message classification.
-    Paper: "For both transformer-based models (BERT and RoBERTa) 'tensorflow' was
-            utilised. For BERT, the BERT tokenizer within tensorflow was used."
-
-    Uses HuggingFace transformers with TensorFlow backend.
-    Model: bert-base-uncased (standard BERT)
+    BERT-base-uncased fine-tuned for Adult/Child speaker-role classification.
+    Uses PyTorch backend (paper used TensorFlow; framework changed due to
+    TensorFlow not supporting Python 3.13).
     """
-
-    def __init__(self, model_name: str = "bert-base-uncased", max_length: int = 128):
-        self.model_name = model_name
-        self.max_length = max_length
-        self.model = None
-        self.tokenizer = None
-        self.name = "BERT"
-        self._available = False
-
-    def _load_model(self) -> bool:
-        """Lazy-load model to avoid import at module level."""
-        try:
-            import tensorflow as tf
-            from transformers import TFBertForSequenceClassification, BertTokenizer
-            self.tokenizer = BertTokenizer.from_pretrained(self.model_name)
-            self.model = TFBertForSequenceClassification.from_pretrained(
-                self.model_name, num_labels=2
-            )
-            self._available = True
-            return True
-        except ImportError as e:
-            logger.warning(f"Cannot load BERT: {e}. Install tensorflow and transformers.")
-            return False
-
-    def fit(
-        self,
-        X_texts: list[str],
-        y: np.ndarray,
-        epochs: int = 3,
-        batch_size: int = 16,
-        learning_rate: float = 2e-5,
-    ) -> "BERTClassifier":
-        if not self._available:
-            if not self._load_model():
-                raise RuntimeError("BERT dependencies not available")
-
-        import tensorflow as tf
-
-        encodings = self.tokenizer(
-            X_texts,
-            padding=True,
-            truncation=True,
-            max_length=self.max_length,
-            return_tensors="tf",
+    def __init__(self, max_length: int = 128):
+        super().__init__(
+            model_name="bert-base-uncased",
+            name="BERT",
+            max_length=max_length,
         )
-        labels = tf.convert_to_tensor(y, dtype=tf.int32)
-
-        optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-        loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-        self.model.compile(optimizer=optimizer, loss=loss, metrics=["accuracy"])
-
-        dataset = tf.data.Dataset.from_tensor_slices((
-            {"input_ids": encodings["input_ids"],
-             "attention_mask": encodings["attention_mask"],
-             "token_type_ids": encodings["token_type_ids"]},
-            labels
-        )).batch(batch_size)
-
-        self.model.fit(dataset, epochs=epochs)
-        return self
-
-    def predict_proba(self, X_texts: list[str]) -> np.ndarray:
-        """Returns P(Adult) for each message."""
-        import tensorflow as tf
-
-        encodings = self.tokenizer(
-            X_texts,
-            padding=True,
-            truncation=True,
-            max_length=self.max_length,
-            return_tensors="tf",
-        )
-        logits = self.model(encodings).logits
-        probs = tf.nn.softmax(logits, axis=-1).numpy()
-        return probs[:, 1]  # P(Adult)
-
-    def predict(self, X_texts: list[str]) -> np.ndarray:
-        proba = self.predict_proba(X_texts)
-        return (proba >= 0.5).astype(int)
-
-    def evaluate(
-        self,
-        X_texts: list[str],
-        y_true: np.ndarray,
-        t_values: list[float] = [0.0, 0.2, 0.3, 0.4, 0.45],
-    ) -> dict[str, dict]:
-        """Evaluate with multiple t thresholds."""
-        proba = self.predict_proba(X_texts)
-        n_total = len(y_true)
-        results = {}
-
-        for t in t_values:
-            if t == 0.0:
-                # No omission
-                y_pred = (proba >= 0.5).astype(int)
-                metrics = compute_mla_metrics(y_true, y_pred, n_total=n_total)
-                results[f"t={t}"] = metrics
-            else:
-                kept_mask, omit_mask = apply_message_threshold(proba, t)
-                y_pred_kept = (proba[kept_mask] >= 0.5).astype(int)
-                y_true_kept = y_true[kept_mask]
-                metrics = compute_mla_metrics(
-                    y_true_kept, y_pred_kept, kept_mask=kept_mask, n_total=n_total
-                )
-                results[f"t={t}"] = metrics
-
-        return results
-
-    def get_predictions_with_proba(
-        self,
-        X_texts: list[str],
-        y_true: np.ndarray,
-    ) -> pd.DataFrame:
-        """Return DataFrame with text, true label, and prediction probability."""
-        proba = self.predict_proba(X_texts)
-        return pd.DataFrame({
-            "utterance": X_texts,
-            "true_label": y_true,
-            "pred_proba": proba,
-        })
-
-    def save(self, path: Path) -> None:
-        self.model.save_pretrained(str(path))
-        self.tokenizer.save_pretrained(str(path))
-
-    def load(self, path: Path) -> "BERTClassifier":
-        from transformers import TFBertForSequenceClassification, BertTokenizer
-        self.tokenizer = BertTokenizer.from_pretrained(str(path))
-        self.model = TFBertForSequenceClassification.from_pretrained(str(path))
-        self._available = True
-        return self
 
 
 # ---------------------------------------------------------------------------
 # RoBERTa Classifier
 # ---------------------------------------------------------------------------
 
-class RoBERTaClassifier:
+class RoBERTaClassifier(_TransformerClassifier):
     """
-    RoBERTa-based binary classifier for Adult/Child message classification.
-    Paper: "For RoBERTa the 'RoBERTa-base' tokenizer was used."
+    RoBERTa-base fine-tuned for Adult/Child speaker-role classification.
+    Uses PyTorch backend (paper used TensorFlow; framework changed due to
+    TensorFlow not supporting Python 3.13).
     """
-
-    def __init__(self, model_name: str = "roberta-base", max_length: int = 128):
-        self.model_name = model_name
-        self.max_length = max_length
-        self.model = None
-        self.tokenizer = None
-        self.name = "RoBERTa"
-        self._available = False
-
-    def _load_model(self) -> bool:
-        try:
-            import tensorflow as tf
-            from transformers import TFRobertaForSequenceClassification, RobertaTokenizer
-            self.tokenizer = RobertaTokenizer.from_pretrained(self.model_name)
-            self.model = TFRobertaForSequenceClassification.from_pretrained(
-                self.model_name, num_labels=2
-            )
-            self._available = True
-            return True
-        except ImportError as e:
-            logger.warning(f"Cannot load RoBERTa: {e}. Install tensorflow and transformers.")
-            return False
-
-    def fit(
-        self,
-        X_texts: list[str],
-        y: np.ndarray,
-        epochs: int = 3,
-        batch_size: int = 16,
-        learning_rate: float = 2e-5,
-    ) -> "RoBERTaClassifier":
-        if not self._available:
-            if not self._load_model():
-                raise RuntimeError("RoBERTa dependencies not available")
-
-        import tensorflow as tf
-
-        encodings = self.tokenizer(
-            X_texts,
-            padding=True,
-            truncation=True,
-            max_length=self.max_length,
-            return_tensors="tf",
+    def __init__(self, max_length: int = 128):
+        super().__init__(
+            model_name="roberta-base",
+            name="RoBERTa",
+            max_length=max_length,
         )
-        labels = tf.convert_to_tensor(y, dtype=tf.int32)
-
-        optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-        loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-        self.model.compile(optimizer=optimizer, loss=loss, metrics=["accuracy"])
-
-        dataset = tf.data.Dataset.from_tensor_slices((
-            {"input_ids": encodings["input_ids"],
-             "attention_mask": encodings["attention_mask"]},
-            labels
-        )).batch(batch_size)
-
-        self.model.fit(dataset, epochs=epochs)
-        return self
-
-    def predict_proba(self, X_texts: list[str]) -> np.ndarray:
-        """Returns P(Adult) for each message."""
-        import tensorflow as tf
-
-        encodings = self.tokenizer(
-            X_texts,
-            padding=True,
-            truncation=True,
-            max_length=self.max_length,
-            return_tensors="tf",
-        )
-        logits = self.model(encodings).logits
-        probs = tf.nn.softmax(logits, axis=-1).numpy()
-        return probs[:, 1]
-
-    def predict(self, X_texts: list[str]) -> np.ndarray:
-        proba = self.predict_proba(X_texts)
-        return (proba >= 0.5).astype(int)
-
-    def evaluate(
-        self,
-        X_texts: list[str],
-        y_true: np.ndarray,
-        t_values: list[float] = [0.0, 0.2, 0.3, 0.4, 0.45],
-    ) -> dict[str, dict]:
-        """Evaluate with multiple t thresholds."""
-        proba = self.predict_proba(X_texts)
-        n_total = len(y_true)
-        results = {}
-
-        for t in t_values:
-            if t == 0.0:
-                y_pred = (proba >= 0.5).astype(int)
-                metrics = compute_mla_metrics(y_true, y_pred, n_total=n_total)
-                results[f"t={t}"] = metrics
-            else:
-                kept_mask, omit_mask = apply_message_threshold(proba, t)
-                y_pred_kept = (proba[kept_mask] >= 0.5).astype(int)
-                y_true_kept = y_true[kept_mask]
-                metrics = compute_mla_metrics(
-                    y_true_kept, y_pred_kept, kept_mask=kept_mask, n_total=n_total
-                )
-                results[f"t={t}"] = metrics
-
-        return results
-
-    def get_predictions_with_proba(
-        self,
-        X_texts: list[str],
-        y_true: np.ndarray,
-    ) -> pd.DataFrame:
-        proba = self.predict_proba(X_texts)
-        return pd.DataFrame({
-            "utterance": X_texts,
-            "true_label": y_true,
-            "pred_proba": proba,
-        })
-
-    def save(self, path: Path) -> None:
-        self.model.save_pretrained(str(path))
-        self.tokenizer.save_pretrained(str(path))
-
-    def load(self, path: Path) -> "RoBERTaClassifier":
-        from transformers import TFRobertaForSequenceClassification, RobertaTokenizer
-        self.tokenizer = RobertaTokenizer.from_pretrained(str(path))
-        self.model = TFRobertaForSequenceClassification.from_pretrained(str(path))
-        self._available = True
-        return self

@@ -1,6 +1,11 @@
 # Core dependencies for Online Grooming Detection Implementation
-# Paper: "Enhanced Online Grooming Detection Employing Context Determination 
+# Paper: "Enhanced Online Grooming Detection Employing Context Determination
 #         and Message-Level Analysis" by Street et al. (2025)
+#
+# Note: The paper uses TensorFlow for BERT/RoBERTa.
+# This implementation uses PyTorch because tensorflow>=2.17 does not support
+# Python 3.13. Model architecture, hyperparameters, and tokenisation are
+# identical to the paper.
 
 # Data handling
 numpy==1.26.4
@@ -9,10 +14,10 @@ pandas==2.2.2
 # Traditional ML (SVM, Naive Bayes)
 scikit-learn==1.5.0
 
-# Transformer models (BERT, RoBERTa)
-# Paper uses TensorFlow for transformers
-tensorflow==2.17.0
-transformers==4.44.2
+# Transformer models (BERT, RoBERTa) — PyTorch backend
+# torch is pre-installed; install transformers separately
+transformers>=4.44.2
+# torch>=2.0.0  # already installed as torch 2.9.0+cpu
 
 # Statistical tests (binomial test for Actor Significance)
 scipy==1.13.1
@@ -21,11 +26,15 @@ scipy==1.13.1
 matplotlib==3.9.0
 seaborn==0.13.2
 
+# Web UI
+streamlit>=1.35.0
+plotly>=5.20.0
+
 # Text encoding detection
 chardet==5.2.0
 
 # Testing
 pytest==8.2.2
 
-# Progress bars (optional, for long training runs)
+# Progress bars
 tqdm==4.66.4

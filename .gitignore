@@ -22,7 +22,7 @@ env/
 
 # Jupyter
 .ipynb_checkpoints/
-*.ipynb
+# *.ipynb  — notebooks are tracked (colab_training.ipynb)
 
 # IDE
 .vscode/
